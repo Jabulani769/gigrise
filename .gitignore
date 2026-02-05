@@ -39,3 +39,28 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Environment variables
+.env*.local
+.env
+
+# Database
+*.db
+*.sqlite
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+
+# OS
+.DS_Store
+*.swp
+*.swo
+
+# Testing
+coverage/
+
+# Logs
+*.log
