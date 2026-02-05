@@ -8,6 +8,17 @@ import {
   TrendingUp,
   Users,
   CheckCircle,
+  Star,
+  Briefcase,
+  ShoppingBag,
+  Clock,
+  Laptop,
+  Paintbrush,
+  Edit,
+  Smartphone,
+  Film,
+  Phone,
+  Tag,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -15,7 +26,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-white">
       {/* Navigation */}
       <nav className="fixed top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo */}
             <div className="flex items-center">
@@ -28,16 +39,16 @@ export default function HomePage() {
             {/* Desktop Navigation */}
             <div className="hidden items-center space-x-8 md:flex">
               <Link
-                href="/about"
+                href="#features"
                 className="text-gray-600 transition hover:text-gray-900"
               >
-                About
+                Features
               </Link>
               <Link
-                href=""
+                href="#categories"
                 className="text-gray-600 transition hover:text-gray-900"
               >
-                Blog
+                Categories
               </Link>
               <Link
                 href="#pricing"
@@ -46,10 +57,10 @@ export default function HomePage() {
                 Pricing
               </Link>
               <Link
-                href=""
+                href="/about"
                 className="text-gray-600 transition hover:text-gray-900"
               >
-                FAQ
+                About
               </Link>
             </div>
 
@@ -98,7 +109,7 @@ export default function HomePage() {
             </p>
 
             {/* CTA Buttons */}
-            <div className="items-left flex flex-col justify-start gap-4 sm:flex-row">
+            <div className="flex flex-col items-start justify-start gap-4 sm:flex-row">
               <Link
                 href="/signup?type=client"
                 className="flex w-full items-center justify-center space-x-2 rounded-lg bg-blue-600 px-8 py-4 font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 sm:w-auto"
@@ -115,7 +126,7 @@ export default function HomePage() {
             </div>
 
             {/* Stats */}
-            <div className="mt-14 grid max-w-2xl grid-cols-3 gap-8">
+            <div className="mt-16 grid max-w-2xl grid-cols-3 gap-8">
               <div>
                 <div className="text-3xl font-bold text-gray-900">500+</div>
                 <div className="mt-1 text-sm text-gray-600">
@@ -151,7 +162,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {/* Feature 1 */}
             <div className="rounded-2xl bg-white p-8 shadow-sm transition hover:shadow-md">
               <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
@@ -241,6 +252,165 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Popular Categories */}
+      <section id="categories" className="bg-white py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-4xl font-bold text-gray-900">
+              Explore Popular Categories
+            </h2>
+            <p className="text-xl text-gray-600">
+              Find the perfect freelancer or product for your needs
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
+            {[
+              {
+                name: 'Web Development',
+                icon: <Laptop className="h-6 w-6 text-indigo-600" />,
+                count: '120+ gigs',
+              },
+              {
+                name: 'Graphic Design',
+                icon: <Paintbrush className="h-6 w-6 text-indigo-600" />,
+                count: '85+ gigs',
+              },
+              {
+                name: 'Content Writing',
+                icon: <Edit className="h-6 w-6 text-indigo-600" />,
+                count: '95+ gigs',
+              },
+              {
+                name: 'Digital Marketing',
+                icon: <Smartphone className="h-6 w-6 text-indigo-600" />,
+                count: '70+ gigs',
+              },
+              {
+                name: 'Video Editing',
+                icon: <Film className="h-6 w-6 text-indigo-600" />,
+                count: '45+ gigs',
+              },
+              {
+                name: 'Mobile Apps',
+                icon: <Phone className="h-6 w-6 text-indigo-600" />,
+                count: '55+ gigs',
+              },
+              {
+                name: 'Electronics',
+                icon: <Zap className="h-6 w-6 text-indigo-600" />,
+                count: '200+ products',
+              },
+              {
+                name: 'Fashion',
+                icon: <Tag className="h-6 w-6 text-indigo-600" />,
+                count: '150+ products',
+              },
+            ].map((category) => (
+              <Link
+                key={category.name}
+                href={`/browse?category=${category.name.toLowerCase().replace(' ', '-')}`}
+                className="group rounded-xl border-2 border-gray-200 bg-white p-6 transition hover:border-blue-500 hover:shadow-md"
+              >
+                <div className="mb-3 text-4xl">{category.icon}</div>
+                <h3 className="mb-1 font-semibold text-gray-900 group-hover:text-blue-600">
+                  {category.name}
+                </h3>
+                <p className="text-sm text-gray-600">{category.count}</p>
+              </Link>
+            ))}
+          </div>
+
+          <div className="mt-10 text-center">
+            <Link
+              href="/browse"
+              className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700"
+            >
+              <span className="font-semibold">View All Categories</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Dual Platform Section */}
+      <section className="bg-white py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            {/* Left Side - Freelance */}
+            <div className="rounded-2xl bg-linear-to-br from-blue-50 to-purple-50 p-8">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600">
+                <Briefcase className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="mb-4 text-3xl font-bold text-gray-900">
+                Freelance Services
+              </h3>
+              <p className="mb-6 text-lg text-gray-600">
+                Find skilled professionals for your projects. From web
+                development to graphic design, get quality work delivered on
+                time.
+              </p>
+              <ul className="mb-8 space-y-3">
+                <li className="flex items-center text-gray-700">
+                  <CheckCircle className="mr-3 h-5 w-5 text-green-600" />
+                  <span>Browse 500+ skilled freelancers</span>
+                </li>
+                <li className="flex items-center text-gray-700">
+                  <CheckCircle className="mr-3 h-5 w-5 text-green-600" />
+                  <span>Secure escrow payments</span>
+                </li>
+                <li className="flex items-center text-gray-700">
+                  <CheckCircle className="mr-3 h-5 w-5 text-green-600" />
+                  <span>Ratings and reviews</span>
+                </li>
+              </ul>
+              <Link
+                href="/browse-gigs"
+                className="inline-flex items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
+              >
+                <span>Browse Gigs</span>
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </div>
+
+            {/* Right Side - Marketplace */}
+            <div className="rounded-2xl bg-linear-to-br from-purple-50 to-pink-50 p-8">
+              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-600">
+                <ShoppingBag className="h-8 w-8 text-white" />
+              </div>
+              <h3 className="mb-4 text-3xl font-bold text-gray-900">
+                Product Marketplace
+              </h3>
+              <p className="mb-6 text-lg text-gray-600">
+                Buy and sell products with ease. Electronics, fashion, home
+                goods, and more - all in one convenient marketplace.
+              </p>
+              <ul className="mb-8 space-y-3">
+                <li className="flex items-center text-gray-700">
+                  <CheckCircle className="mr-3 h-5 w-5 text-green-600" />
+                  <span>Shop 1000+ products</span>
+                </li>
+                <li className="flex items-center text-gray-700">
+                  <CheckCircle className="mr-3 h-5 w-5 text-green-600" />
+                  <span>Safe payment options</span>
+                </li>
+                <li className="flex items-center text-gray-700">
+                  <CheckCircle className="mr-3 h-5 w-5 text-green-600" />
+                  <span>Seller verification</span>
+                </li>
+              </ul>
+              <Link
+                href="/marketplace"
+                className="inline-flex items-center space-x-2 rounded-lg bg-purple-600 px-6 py-3 font-semibold text-white transition hover:bg-purple-700"
+              >
+                <span>Browse Products</span>
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section id="pricing" className="bg-gray-50 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -253,14 +423,14 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
+          <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-2">
             {/* Free Plan */}
             <div className="rounded-2xl border-2 border-gray-200 bg-white p-8 shadow-sm">
               <div className="mb-8 text-center">
                 <h3 className="mb-2 text-2xl font-bold text-gray-900">
                   Freemium
                 </h3>
-                <div className="mb-4 text-4xl font-bold text-gray-900">
+                <div className="mb-4 text-5xl font-bold text-gray-900">
                   Free
                 </div>
                 <p className="text-gray-600">Perfect for getting started</p>
@@ -291,7 +461,7 @@ export default function HomePage() {
               </ul>
               <Link
                 href="/signup"
-                className="block w-full rounded-lg bg-gray-900 px-6 py-3 text-center font-semibold text-white transition hover:bg-gray-800"
+                className="block w-full rounded-lg bg-gray-900 px-6 py-4 text-center font-semibold text-white transition hover:bg-gray-800"
               >
                 Get Started Free
               </Link>
@@ -304,7 +474,7 @@ export default function HomePage() {
               </div>
               <div className="mb-8 text-center">
                 <h3 className="mb-2 text-2xl font-bold">Premium</h3>
-                <div className="mb-1 text-4xl font-bold">MK 15,000</div>
+                <div className="mb-1 text-5xl font-bold">MK 15,000</div>
                 <p className="text-blue-100">per month</p>
               </div>
               <ul className="mb-8 space-y-4">
@@ -339,7 +509,7 @@ export default function HomePage() {
               </ul>
               <Link
                 href="/signup?plan=premium"
-                className="block w-full rounded-lg bg-white px-6 py-3 text-center font-semibold text-blue-600 transition hover:bg-gray-50"
+                className="block w-full rounded-lg bg-white px-6 py-4 text-center font-semibold text-blue-600 transition hover:bg-gray-50"
               >
                 Upgrade to Premium
               </Link>
