@@ -10,70 +10,121 @@ import {
   User,
   Briefcase,
   ShoppingCart,
+  Store,
+  Check,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 
+type SignupStep = 'account-type' | 'details' | 'verification';
+type UserType = 'freelancer' | 'client' | 'seller' | 'both';
+
 export default function SignupPage() {
-  const [userType, setUserType] = useState<'freelancer' | 'client' | 'both'>(
-    'freelancer'
-  );
+  const [currentStep, setCurrentStep] = useState<SignupStep>('account-type');
+  const [userType, setUserType] = useState<UserType>('freelancer');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     password: '',
     confirmPassword: '',
+    phone: '',
+    location: '',
+    agreedToTerms: false,
+    wantsNewsletter: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: type === 'checkbox' ? checked : value,
     });
-    // Clear error when user starts typing
-    if (errors[e.target.name]) {
-      setErrors({ ...errors, [e.target.name]: '' });
+
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: '' });
     }
   };
 
-  const validateForm = () => {
+  const validateStep = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
-    }
+    if (currentStep === 'details') {
+      if (!formData.fullName.trim()) {
+        newErrors.fullName = 'Full name is required';
+      } else if (formData.fullName.length < 3) {
+        newErrors.fullName = 'Name must be at least 3 characters';
+      }
 
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
+      if (!formData.email.trim()) {
+        newErrors.email = 'Email is required';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        newErrors.email = 'Please enter a valid email';
+      }
 
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    }
+      if (!formData.password) {
+        newErrors.password = 'Password is required';
+      } else if (formData.password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters';
+      } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+        newErrors.password =
+          'Password must contain uppercase, lowercase, and number';
+      }
 
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+      }
+
+      if (!formData.phone.trim()) {
+        newErrors.phone = 'Phone number is required';
+      }
+
+      if (!formData.location.trim()) {
+        newErrors.location = 'Location is required';
+      }
+
+      if (!formData.agreedToTerms) {
+        newErrors.agreedToTerms = 'You must agree to the terms';
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleNext = () => {
+    if (currentStep === 'account-type') {
+      setCurrentStep('details');
+    } else if (currentStep === 'details') {
+      if (validateStep()) {
+        setCurrentStep('verification');
+      }
+    }
+  };
 
-    if (!validateForm()) return;
+  const handleBack = () => {
+    if (currentStep === 'details') {
+      setCurrentStep('account-type');
+    } else if (currentStep === 'verification') {
+      setCurrentStep('details');
+    }
+  };
 
+  const handleSubmit = async () => {
     setIsLoading(true);
 
     // Simulate API call
     setTimeout(() => {
       console.log('Signup data:', { ...formData, userType });
-      alert('Account created successfully! (This is a demo)');
+      // Redirect to email verification page
+      window.location.href = '/verify-email';
       setIsLoading(false);
     }, 2000);
   };
@@ -101,322 +152,647 @@ export default function SignupPage() {
         </div>
       </header>
 
+      {/* Progress Bar */}
+      <div className="mx-auto max-w-2xl px-4 pt-8">
+        <div className="flex items-center justify-center">
+          {[
+            { id: 'account-type', label: 'Account Type', step: 1 },
+            { id: 'details', label: 'Your Details', step: 2 },
+            { id: 'verification', label: 'Verify', step: 3 },
+          ].map((item, idx) => (
+            <div key={item.id} className="flex flex-1 items-center">
+              <div className="flex flex-col items-center">
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition ${
+                    currentStep === item.id
+                      ? 'border-blue-600 bg-blue-600 text-white'
+                      : item.step <
+                          (currentStep === 'details'
+                            ? 2
+                            : currentStep === 'verification'
+                              ? 3
+                              : 1)
+                        ? 'border-green-600 bg-green-600 text-white'
+                        : 'border-gray-300 bg-white text-gray-400'
+                  }`}
+                >
+                  {item.step <
+                  (currentStep === 'details'
+                    ? 2
+                    : currentStep === 'verification'
+                      ? 3
+                      : 1) ? (
+                    <Check className="h-5 w-5" />
+                  ) : (
+                    item.step
+                  )}
+                </div>
+                <span className="mt-2 hidden text-xs text-gray-600 sm:block">
+                  {item.label}
+                </span>
+              </div>
+              {idx < 2 && (
+                <div
+                  className={`mx-2 h-1 flex-1 rounded ${
+                    item.step <
+                    (currentStep === 'details'
+                      ? 2
+                      : currentStep === 'verification'
+                        ? 3
+                        : 1)
+                      ? 'bg-green-600'
+                      : 'bg-gray-300'
+                  }`}
+                ></div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Main Content */}
-      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md">
-          {/* Title */}
-          <div className="mb-8 text-center">
-            <h1 className="mb-2 text-3xl font-bold text-gray-900">
-              Create your account
-            </h1>
-            <p className="text-gray-600">
-              Join thousands of freelancers and clients on Gigrise
-            </p>
-          </div>
-
-          {/* User Type Selection */}
-          <div className="mb-6">
-            <label className="mb-3 block text-sm font-medium text-gray-700">
-              I want to:
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setUserType('freelancer')}
-                className={`flex flex-col items-center rounded-lg border-2 p-4 transition ${
-                  userType === 'freelancer'
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
-              >
-                <Briefcase
-                  className={`mb-2 h-6 w-6 ${
-                    userType === 'freelancer'
-                      ? 'text-blue-600'
-                      : 'text-gray-400'
-                  }`}
-                />
-                <span
-                  className={`text-sm font-medium ${
-                    userType === 'freelancer'
-                      ? 'text-blue-600'
-                      : 'text-gray-700'
-                  }`}
-                >
-                  Sell Services
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setUserType('client')}
-                className={`flex flex-col items-center rounded-lg border-2 p-4 transition ${
-                  userType === 'client'
-                    ? 'border-purple-600 bg-purple-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
-              >
-                <ShoppingCart
-                  className={`mb-2 h-6 w-6 ${
-                    userType === 'client' ? 'text-purple-600' : 'text-gray-400'
-                  }`}
-                />
-                <span
-                  className={`text-sm font-medium ${
-                    userType === 'client' ? 'text-purple-600' : 'text-gray-700'
-                  }`}
-                >
-                  Hire Talent
-                </span>
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={() => setUserType('both')}
-              className={`mt-3 w-full rounded-lg border-2 p-3 text-sm font-medium transition ${
-                userType === 'both'
-                  ? 'border-indigo-600 bg-indigo-50 text-indigo-600'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Both - I want to buy and sell
-            </button>
-          </div>
-
-          {/* Signup Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Full Name */}
-            <div>
-              <label
-                htmlFor="fullName"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
-                Full Name
-              </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <User className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  id="fullName"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  className={`block w-full rounded-lg border ${
-                    errors.fullName
-                      ? 'border-red-500'
-                      : 'border-gray-300 text-gray-700'
-                  } py-3 pr-3 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none`}
-                  placeholder="John Doe"
-                />
-              </div>
-              {errors.fullName && (
-                <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
-              )}
-            </div>
-
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
-                Email Address
-              </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={`block w-full rounded-lg border ${
-                    errors.email
-                      ? 'border-red-500'
-                      : 'border-gray-300 text-gray-700'
-                  } py-3 pr-3 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none`}
-                  placeholder="john@example.com"
-                />
-              </div>
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div>
-              <label
-                htmlFor="password"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
-                Password
-              </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={`block w-full rounded-lg border ${
-                    errors.password
-                      ? 'border-red-500'
-                      : 'border-gray-300 text-gray-700'
-                  } py-3 pr-3 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none`}
-                  placeholder="••••••••"
-                />
-              </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
-              )}
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
-                Confirm Password
-              </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className={`block w-full rounded-lg border ${
-                    errors.confirmPassword
-                      ? 'border-red-500'
-                      : 'border-gray-300 text-gray-700'
-                  } py-3 pr-3 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none`}
-                  placeholder="••••••••"
-                />
-              </div>
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.confirmPassword}
+      <div className="flex min-h-[calc(100vh-12rem)] items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+        <div className="w-full max-w-2xl">
+          {/* Step 1: Account Type */}
+          {currentStep === 'account-type' && (
+            <div className="animate-in fade-in duration-300">
+              <div className="mb-8 text-center">
+                <h1 className="mb-2 text-3xl font-bold text-gray-900">
+                  Choose Your Account Type
+                </h1>
+                <p className="text-gray-600">
+                  Select how you want to use Gigrise
                 </p>
-              )}
-            </div>
-
-            {/* Terms */}
-            <div className="flex items-start">
-              <input
-                type="checkbox"
-                id="terms"
-                required
-                className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
-                I agree to the{' '}
-                <Link
-                  href="/terms"
-                  className="text-blue-600 hover:text-blue-700"
-                >
-                  Terms of Service
-                </Link>{' '}
-                and{' '}
-                <Link
-                  href="/privacy"
-                  className="text-blue-600 hover:text-blue-700"
-                >
-                  Privacy Policy
-                </Link>
-              </label>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex w-full items-center justify-center space-x-2 rounded-lg bg-linear-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white transition hover:from-blue-700 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isLoading ? (
-                <span>Creating account...</span>
-              ) : (
-                <>
-                  <span>Create Account</span>
-                  <ArrowRight className="h-5 w-5" />
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Social Signup */}
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-linear-to-br from-blue-50 via-white to-purple-50 px-2 text-gray-500">
-                  Or continue with
-                </span>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                {/* Freelancer Option */}
+                <button
+                  onClick={() => setUserType('freelancer')}
+                  className={`group rounded-xl border-2 p-6 text-left transition ${
+                    userType === 'freelancer'
+                      ? 'border-blue-600 bg-blue-50'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  <div className="mb-4 flex items-center justify-between">
+                    <div
+                      className={`flex h-12 w-12 items-center justify-center rounded-lg transition ${
+                        userType === 'freelancer'
+                          ? 'bg-blue-600'
+                          : 'bg-gray-100 group-hover:bg-gray-200'
+                      }`}
+                    >
+                      <Briefcase
+                        className={`h-6 w-6 ${userType === 'freelancer' ? 'text-white' : 'text-gray-600'}`}
+                      />
+                    </div>
+                    <div
+                      className={`h-6 w-6 rounded-full border-2 transition ${
+                        userType === 'freelancer'
+                          ? 'border-blue-600 bg-blue-600'
+                          : 'border-gray-300'
+                      }`}
+                    >
+                      {userType === 'freelancer' && (
+                        <Check className="h-5 w-5 text-white" />
+                      )}
+                    </div>
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                    Freelancer
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Offer your services, build portfolio, get hired by clients
+                  </p>
+                </button>
+
+                {/* Client Option */}
+                <button
+                  onClick={() => setUserType('client')}
+                  className={`group rounded-xl border-2 p-6 text-left transition ${
+                    userType === 'client'
+                      ? 'border-purple-600 bg-purple-50'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  <div className="mb-4 flex items-center justify-between">
+                    <div
+                      className={`flex h-12 w-12 items-center justify-center rounded-lg transition ${
+                        userType === 'client'
+                          ? 'bg-purple-600'
+                          : 'bg-gray-100 group-hover:bg-gray-200'
+                      }`}
+                    >
+                      <ShoppingCart
+                        className={`h-6 w-6 ${userType === 'client' ? 'text-white' : 'text-gray-600'}`}
+                      />
+                    </div>
+                    <div
+                      className={`h-6 w-6 rounded-full border-2 transition ${
+                        userType === 'client'
+                          ? 'border-purple-600 bg-purple-600'
+                          : 'border-gray-300'
+                      }`}
+                    >
+                      {userType === 'client' && (
+                        <Check className="h-5 w-5 text-white" />
+                      )}
+                    </div>
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                    Client
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Hire freelancers for projects and services
+                  </p>
+                </button>
+
+                {/* Marketplace Seller Option */}
+                <button
+                  onClick={() => setUserType('seller')}
+                  className={`group rounded-xl border-2 p-6 text-left transition ${
+                    userType === 'seller'
+                      ? 'border-green-600 bg-green-50'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  <div className="mb-4 flex items-center justify-between">
+                    <div
+                      className={`flex h-12 w-12 items-center justify-center rounded-lg transition ${
+                        userType === 'seller'
+                          ? 'bg-green-600'
+                          : 'bg-gray-100 group-hover:bg-gray-200'
+                      }`}
+                    >
+                      <Store
+                        className={`h-6 w-6 ${userType === 'seller' ? 'text-white' : 'text-gray-600'}`}
+                      />
+                    </div>
+                    <div
+                      className={`h-6 w-6 rounded-full border-2 transition ${
+                        userType === 'seller'
+                          ? 'border-green-600 bg-green-600'
+                          : 'border-gray-300'
+                      }`}
+                    >
+                      {userType === 'seller' && (
+                        <Check className="h-5 w-5 text-white" />
+                      )}
+                    </div>
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                    Marketplace Seller
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Sell physical products in our marketplace
+                  </p>
+                </button>
+
+                {/* All-in-One Option */}
+                <button
+                  onClick={() => setUserType('both')}
+                  className={`group rounded-xl border-2 p-6 text-left transition ${
+                    userType === 'both'
+                      ? 'border-indigo-600 bg-indigo-50'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  <div className="mb-4 flex items-center justify-between">
+                    <div
+                      className={`flex h-12 w-12 items-center justify-center rounded-lg transition ${
+                        userType === 'both'
+                          ? 'bg-indigo-600'
+                          : 'bg-gray-100 group-hover:bg-gray-200'
+                      }`}
+                    >
+                      <div className="grid grid-cols-2 gap-0.5">
+                        <Briefcase
+                          className={`h-4 w-4 ${userType === 'both' ? 'text-white' : 'text-gray-600'}`}
+                        />
+                        <Store
+                          className={`h-4 w-4 ${userType === 'both' ? 'text-white' : 'text-gray-600'}`}
+                        />
+                      </div>
+                    </div>
+                    <div
+                      className={`h-6 w-6 rounded-full border-2 transition ${
+                        userType === 'both'
+                          ? 'border-indigo-600 bg-indigo-600'
+                          : 'border-gray-300'
+                      }`}
+                    >
+                      {userType === 'both' && (
+                        <Check className="h-5 w-5 text-white" />
+                      )}
+                    </div>
+                  </div>
+                  <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                    All-in-One
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Full access: Freelance, hire, and sell products
+                  </p>
+                </button>
+              </div>
+
+              <button
+                onClick={handleNext}
+                className="mt-8 flex w-full items-center justify-center space-x-2 rounded-lg bg-linear-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white transition hover:from-blue-700 hover:to-purple-700"
+              >
+                <span>Continue</span>
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            </div>
+          )}
+
+          {/* Step 2: Details - Same as before */}
+          {currentStep === 'details' && (
+            <div className="animate-in fade-in duration-300">
+              <div className="mb-8 text-center">
+                <h1 className="mb-2 text-3xl font-bold text-gray-900">
+                  Create Your Account
+                </h1>
+                <p className="text-gray-600">
+                  Fill in your details to get started
+                </p>
+              </div>
+
+              <form className="space-y-4">
+                {/* Full Name */}
+                <div>
+                  <label
+                    htmlFor="fullName"
+                    className="mb-1 block text-sm font-medium text-gray-700"
+                  >
+                    Full Name
+                  </label>
+                  <div className="relative">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <User className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      id="fullName"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                      className={`block w-full rounded-lg border ${
+                        errors.fullName
+                          ? 'border-red-500'
+                          : 'border-gray-300 text-gray-700'
+                      } py-3 pr-3 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none`}
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  {errors.fullName && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.fullName}
+                    </p>
+                  )}
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="mb-1 block text-sm font-medium text-gray-700"
+                  >
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <Mail className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className={`block w-full rounded-lg border ${
+                        errors.email
+                          ? 'border-red-500'
+                          : 'border-gray-300 text-gray-700'
+                      } py-3 pr-3 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none`}
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                  )}
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label
+                    htmlFor="phone"
+                    className="mb-1 block text-sm font-medium text-gray-700"
+                  >
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className={`block w-full rounded-lg border ${
+                      errors.phone
+                        ? 'border-red-500'
+                        : 'border-gray-300 text-gray-700'
+                    } px-3 py-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none`}
+                    placeholder="+265 888 123 456"
+                  />
+                  {errors.phone && (
+                    <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                  )}
+                </div>
+
+                {/* Location */}
+                <div>
+                  <label
+                    htmlFor="location"
+                    className="mb-1 block text-sm font-medium text-gray-700"
+                  >
+                    Location
+                  </label>
+                  <select
+                    id="location"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleChange}
+                    className={`block w-full rounded-lg border ${
+                      errors.location
+                        ? 'border-red-500'
+                        : 'border-gray-300 text-gray-700'
+                    } px-3 py-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none`}
+                  >
+                    <option value="">Select your city</option>
+                    <option value="Blantyre">Blantyre</option>
+                    <option value="Lilongwe">Lilongwe</option>
+                    <option value="Mzuzu">Mzuzu</option>
+                    <option value="Zomba">Zomba</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  {errors.location && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.location}
+                    </p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="mb-1 block text-sm font-medium text-gray-700"
+                  >
+                    Password
+                  </label>
+                  <div className="relative">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <Lock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className={`block w-full rounded-lg border ${
+                        errors.password
+                          ? 'border-red-500'
+                          : 'border-gray-300 text-gray-700'
+                      } py-3 pr-10 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none`}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5 text-gray-400" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-gray-400" />
+                      )}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.password}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-gray-500">
+                    Must be 8+ characters with uppercase, lowercase, and number
+                  </p>
+                </div>
+
+                {/* Confirm Password */}
+                <div>
+                  <label
+                    htmlFor="confirmPassword"
+                    className="mb-1 block text-sm font-medium text-gray-700"
+                  >
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                      <Lock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className={`block w-full rounded-lg border ${
+                        errors.confirmPassword
+                          ? 'border-red-500'
+                          : 'border-gray-300 text-gray-700'
+                      } py-3 pr-10 pl-10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none`}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="absolute inset-y-0 right-0 flex items-center pr-3"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-5 w-5 text-gray-400" />
+                      ) : (
+                        <Eye className="h-5 w-5 text-gray-400" />
+                      )}
+                    </button>
+                  </div>
+                  {errors.confirmPassword && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+
+                {/* Terms & Newsletter */}
+                <div className="space-y-3">
+                  <div className="flex items-start">
+                    <input
+                      type="checkbox"
+                      id="agreedToTerms"
+                      name="agreedToTerms"
+                      checked={formData.agreedToTerms}
+                      onChange={handleChange}
+                      className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <label
+                      htmlFor="agreedToTerms"
+                      className="ml-2 text-sm text-gray-600"
+                    >
+                      I agree to the{' '}
+                      <Link
+                        href="/terms"
+                        className="text-blue-600 hover:text-blue-700"
+                      >
+                        Terms of Service
+                      </Link>{' '}
+                      and{' '}
+                      <Link
+                        href="/privacy"
+                        className="text-blue-600 hover:text-blue-700"
+                      >
+                        Privacy Policy
+                      </Link>
+                    </label>
+                  </div>
+                  {errors.agreedToTerms && (
+                    <p className="text-sm text-red-600">
+                      {errors.agreedToTerms}
+                    </p>
+                  )}
+
+                  <div className="flex items-start">
+                    <input
+                      type="checkbox"
+                      id="wantsNewsletter"
+                      name="wantsNewsletter"
+                      checked={formData.wantsNewsletter}
+                      onChange={handleChange}
+                      className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    <label
+                      htmlFor="wantsNewsletter"
+                      className="ml-2 text-sm text-gray-600"
+                    >
+                      Send me tips, trends, and updates about Gigrise
+                    </label>
+                  </div>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex space-x-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    className="flex-1 rounded-lg border-2 border-gray-300 px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-50"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="flex flex-1 items-center justify-center space-x-2 rounded-lg bg-linear-to-r from-blue-600 to-purple-600 px-6 py-3 font-semibold text-white transition hover:from-blue-700 hover:to-purple-700"
+                  >
+                    <span>Continue</span>
+                    <ArrowRight className="h-5 w-5" />
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* Step 3: Verification */}
+          {currentStep === 'verification' && (
+            <div className="animate-in fade-in duration-300">
+              <div className="mb-8 text-center">
+                <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+                  <Check className="h-10 w-10 text-green-600" />
+                </div>
+                <h1 className="mb-2 text-3xl font-bold text-gray-900">
+                  Almost There!
+                </h1>
+                <p className="text-gray-600">
+                  Review your information and create your account
+                </p>
+              </div>
+
+              <div className="space-y-4 rounded-lg bg-white p-6 shadow-sm">
+                <div className="flex items-center justify-between border-b pb-3">
+                  <span className="text-sm text-gray-600">Account Type</span>
+                  <span className="font-medium text-gray-900">
+                    {userType === 'both'
+                      ? 'All-in-One'
+                      : userType === 'seller'
+                        ? 'Marketplace Seller'
+                        : userType.charAt(0).toUpperCase() + userType.slice(1)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between border-b pb-3">
+                  <span className="text-sm text-gray-600">Full Name</span>
+                  <span className="font-medium text-gray-900">
+                    {formData.fullName}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between border-b pb-3">
+                  <span className="text-sm text-gray-600">Email</span>
+                  <span className="font-medium text-gray-900">
+                    {formData.email}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between border-b pb-3">
+                  <span className="text-sm text-gray-600">Phone</span>
+                  <span className="font-medium text-gray-900">
+                    {formData.phone}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Location</span>
+                  <span className="font-medium text-gray-900">
+                    {formData.location}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-6 rounded-lg bg-blue-50 p-4">
+                <p className="text-sm text-blue-900">
+                  📧 We'll send a verification email to{' '}
+                  <strong>{formData.email}</strong> to confirm your account.
+                </p>
+              </div>
+
+              <div className="mt-8 flex space-x-3">
+                <button
+                  onClick={handleSubmit}
+                  disabled={isLoading}
+                  className={`flex flex-1 items-center justify-center space-x-2 rounded-lg px-6 py-3 font-semibold text-white transition ${
+                    isLoading
+                      ? 'cursor-not-allowed bg-gray-400'
+                      : 'bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+                  }`}
+                >
+                  {isLoading ? (
+                    <span>Creating Account...</span>
+                  ) : (
+                    <>
+                      <span>Create Account</span>
+                      <ArrowRight className="h-5 w-5" />
+                    </>
+                  )}
+                </button>
               </div>
             </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                className="flex items-center justify-center rounded-lg border-2 border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-              >
-                <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-                Google
-              </button>
-              <button
-                type="button"
-                className="flex items-center justify-center rounded-lg border-2 border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-              >
-                <svg
-                  className="mr-2 h-5 w-5"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-                Facebook
-              </button>
-            </div>
-          </div>
-
-          {/* Login Link */}
-          <p className="mt-8 text-center text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link
-              href="/login"
-              className="font-semibold text-blue-600 hover:text-blue-700"
-            >
-              Log in here
-            </Link>
-          </p>
+          )}
         </div>
       </div>
     </div>

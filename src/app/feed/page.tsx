@@ -185,7 +185,9 @@ export default function FeedPage() {
               </Link>
 
               <button className="relative rounded-lg p-2 text-gray-600 hover:bg-gray-100">
-                <Bell className="h-6 w-6" />
+                <Link href="/notifications">
+                  <Bell className="h-6 w-6" />
+                </Link>
                 <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
               </button>
 
