@@ -1,5 +1,6 @@
 // src/app/page.tsx
 import Link from 'next/link';
+import Hero from '../components/hero';
 import {
   ArrowRight,
   Shield,
@@ -82,113 +83,9 @@ export default function HomePage() {
           </div>
         </div>
       </nav>
+
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-white px-4 pt-28 pb-20 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 lg:grid-cols-2">
-          {/* LEFT: Text Content */}
-          <div className="text-left">
-            <h1 className="mb-6 text-5xl leading-tight font-bold text-gray-900 md:text-7xl">
-              Your Gateway to
-              <br />
-              <span className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Freelance Success
-              </span>
-            </h1>
-
-            <p className="mb-10 max-w-3xl text-xl leading-relaxed text-gray-600">
-              Connect with talented freelancers, hire for projects, or sell your
-              products. Gigrise brings opportunities to your fingertips with
-              secure payments and escrow protection.
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col items-start gap-4 sm:flex-row">
-              <Link
-                href="/signup?type=client"
-                className="flex w-full items-center justify-center space-x-2 rounded-lg bg-blue-600 px-8 py-4 font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 sm:w-auto"
-              >
-                <span>Hire Freelancers</span>
-                <ArrowRight className="h-5 w-5" />
-              </Link>
-
-              <Link
-                href="/signup?type=freelancer"
-                className="w-full rounded-lg border-2 border-gray-200 bg-white px-8 py-4 font-semibold text-gray-900 transition hover:border-gray-300 sm:w-auto"
-              >
-                Start Freelancing
-              </Link>
-            </div>
-
-            {/* Stats */}
-            <div className="mt-16 grid max-w-2xl grid-cols-3 gap-8">
-              <div>
-                <div className="text-3xl font-bold text-gray-900">500+</div>
-                <div className="mt-1 text-sm text-gray-600">
-                  Active Freelancers
-                </div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-gray-900">1,000+</div>
-                <div className="mt-1 text-sm text-gray-600">
-                  Projects Completed
-                </div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-gray-900">MK50M+</div>
-                <div className="mt-1 text-sm text-gray-600">
-                  Paid to Freelancers
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* RIGHT: Visual Enhancement */}
-          <div className="relative hidden lg:block">
-            {/* Gradient background blob */}
-            <div className="absolute -top-20 -right-20 h-96 w-96 rounded-full bg-linear-to-r from-blue-500 to-purple-600 opacity-30 blur-3xl"></div>
-
-            {/* Floating cards */}
-            <div className="relative flex flex-col gap-6">
-              <div className="w-72 rounded-xl bg-white p-5 shadow-xl">
-                <div className="text-sm font-semibold text-gray-900">
-                  Web Designer
-                </div>
-                <div className="mt-1 text-xs text-gray-500">
-                  UI/UX • Figma • Webflow
-                </div>
-                <div className="mt-3 text-sm font-bold text-blue-600">
-                  MK120,000 / project
-                </div>
-              </div>
-
-              <div className="ml-16 w-72 rounded-xl bg-white p-5 shadow-xl">
-                <div className="text-sm font-semibold text-gray-900">
-                  Mobile App Developer
-                </div>
-                <div className="mt-1 text-xs text-gray-500">
-                  Flutter • React Native
-                </div>
-                <div className="mt-3 text-sm font-bold text-purple-600">
-                  MK200,000 / project
-                </div>
-              </div>
-
-              <div className="ml-8 w-72 rounded-xl bg-white p-5 shadow-xl">
-                <div className="text-sm font-semibold text-gray-900">
-                  Digital Marketer
-                </div>
-                <div className="mt-1 text-xs text-gray-500">
-                  SEO • Ads • Growth
-                </div>
-                <div className="mt-3 text-sm font-bold text-green-600">
-                  MK90,000 / project
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      <Hero />
       {/* Features Section */}
       <section id="features" className="bg-gray-50 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -290,7 +187,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Popular Categories */}
       <section id="categories" className="bg-white py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -371,7 +267,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Dual Platform Section */}
       <section className="bg-white py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -449,7 +344,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Pricing Section */}
       <section id="pricing" className="bg-gray-50 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -556,7 +450,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* CTA Section */}
       <section className="bg-linear-to-br from-blue-600 to-purple-600 py-20">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
@@ -583,7 +476,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Footer */}
       <footer className="bg-gray-900 py-12 text-gray-400">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
