@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Star } from 'lucide-react';
 
@@ -73,27 +73,38 @@ const FREELANCER_CARDS = [
   },
 ];
 
-// helper
+// Helper
 const rand = (min: number, max: number) => Math.random() * (max - min) + min;
 
 export default function EnhancedHeroSection() {
-  const [activeCard, setActiveCard] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const [time, setTime] = useState(0);
+  const [scatter, setScatter] = useState<
+    {
+      radius: number;
+      angle: number;
+      lift: number;
+      rotate: number;
+      speed: number;
+    }[]
+  >([]);
 
-  // Random scatter ONCE (stable)
-  const scatter = useMemo(
-    () =>
+  // Generate scatter positions only on client after mount
+  useEffect(() => {
+    setMounted(true);
+    setScatter(
       FREELANCER_CARDS.map(() => ({
         radius: rand(120, 220),
         angle: rand(0, Math.PI * 2),
         lift: rand(-40, 40),
         rotate: rand(-12, 12),
         speed: rand(0.15, 0.3),
-      })),
-    []
-  );
+      }))
+    );
+  }, []);
 
   // Auto cycle active card
+  const [activeCard, setActiveCard] = useState(0);
   useEffect(() => {
     const cycle = setInterval(() => {
       setActiveCard((p) => (p + 1) % FREELANCER_CARDS.length);
@@ -108,6 +119,8 @@ export default function EnhancedHeroSection() {
     }, 16);
     return () => clearInterval(tick);
   }, []);
+
+  if (!mounted) return null; // prevent SSR mismatch
 
   return (
     <section className="relative overflow-hidden bg-white px-4 pt-28 pb-20 sm:px-6 sm:pt-10 sm:pb-10 lg:px-8">
@@ -146,83 +159,77 @@ export default function EnhancedHeroSection() {
 
         {/* RIGHT – ORBITING SCATTER */}
         <div className="relative hidden h-[620px] lg:block">
-          <div className="absolute inset-0">
-            {FREELANCER_CARDS.map((card, i) => {
-              const s = scatter[i];
-              const isActive = i === activeCard;
+          {scatter.map((s, i) => {
+            const card = FREELANCER_CARDS[i];
+            const isActive = i === activeCard;
 
-              const angle = s.angle + time * s.speed;
-              const x = Math.cos(angle) * s.radius;
-              const y =
-                Math.sin(angle) * s.radius * 0.6 + s.lift - (isActive ? 40 : 0);
+            const angle = s.angle + time * s.speed;
+            const x = Math.cos(angle) * s.radius;
+            const y =
+              Math.sin(angle) * s.radius * 0.6 + s.lift - (isActive ? 40 : 0);
 
-              return (
-                <div
-                  key={card.id}
-                  className="absolute top-1/2 left-1/2 w-80 rounded-2xl bg-white p-6 transition-all duration-700 ease-out"
-                  style={{
-                    transform: `
-                      translate(-50%, -50%)
-                      translate(${x}px, ${y}px)
-                      rotate(${s.rotate}deg)
-                      scale(${isActive ? 1.08 : 0.94})
-                    `,
-                    zIndex: isActive ? 40 : 10,
-                    opacity: isActive ? 1 : 0.8,
-                    boxShadow: isActive
-                      ? '0 40px 80px rgba(0,0,0,0.25)'
-                      : '0 20px 40px rgba(0,0,0,0.15)',
-                  }}
-                >
-                  {/* Header */}
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-r ${card.gradient} text-xl text-white`}
-                      >
-                        {card.emoji}
-                      </div>
-                      <div>
-                        <div className="font-bold">{card.title}</div>
-                        <div className="text-xs text-gray-500">
-                          {card.skills}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 rounded-full bg-yellow-50 px-2 py-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm font-bold">{card.rating}</span>
-                    </div>
-                  </div>
-
-                  <div className="my-4 h-px bg-gray-200" />
-
-                  <div className="flex justify-between">
-                    <div>
-                      <div
-                        className={`text-lg font-bold text-${card.color}-600`}
-                      >
-                        {card.price}
-                      </div>
-                      <div className="text-xs text-gray-500">per project</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold">{card.duration}</div>
-                      <div className="text-xs text-gray-500">delivery</div>
-                    </div>
-                  </div>
-
-                  {isActive && (
-                    <button
-                      className={`mt-4 w-full rounded-lg bg-linear-to-r ${card.gradient} py-2 text-sm font-semibold text-white`}
+            return (
+              <div
+                key={card.id}
+                className="absolute top-1/2 left-1/2 w-80 rounded-2xl bg-white p-6 transition-all duration-700 ease-out"
+                style={{
+                  transform: `
+                    translate(-50%, -50%)
+                    translate(${x}px, ${y}px)
+                    rotate(${s.rotate}deg)
+                    scale(${isActive ? 1.08 : 0.94})
+                  `,
+                  zIndex: isActive ? 40 : 10,
+                  opacity: isActive ? 1 : 0.8,
+                  boxShadow: isActive
+                    ? '0 40px 80px rgba(0,0,0,0.25)'
+                    : '0 20px 40px rgba(0,0,0,0.15)',
+                }}
+              >
+                {/* Header */}
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-r ${card.gradient} text-xl text-white`}
                     >
-                      View Profile
-                    </button>
-                  )}
+                      {card.emoji}
+                    </div>
+                    <div>
+                      <div className="font-bold">{card.title}</div>
+                      <div className="text-xs text-gray-500">{card.skills}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 rounded-full bg-yellow-50 px-2 py-1">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-sm font-bold">{card.rating}</span>
+                  </div>
                 </div>
-              );
-            })}
-          </div>
+
+                <div className="my-4 h-px bg-gray-200" />
+
+                <div className="flex justify-between">
+                  <div>
+                    <div className={`text-lg font-bold text-${card.color}-600`}>
+                      {card.price}
+                    </div>
+                    <div className="text-xs text-gray-500">per project</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-semibold">{card.duration}</div>
+                    <div className="text-xs text-gray-500">delivery</div>
+                  </div>
+                </div>
+
+                {isActive && (
+                  <button
+                    className={`mt-4 w-full rounded-lg bg-linear-to-r ${card.gradient} py-2 text-sm font-semibold text-white`}
+                  >
+                    View Profile
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
