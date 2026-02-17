@@ -4,6 +4,17 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Star } from 'lucide-react';
 
+// Font Awesome imports
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faLaptopCode,
+  faMobileScreen,
+  faChartLine,
+  faPaintbrush,
+  faPenNib,
+  faVideo,
+} from '@fortawesome/free-solid-svg-icons';
+
 const FREELANCER_CARDS = [
   {
     id: 1,
@@ -13,7 +24,7 @@ const FREELANCER_CARDS = [
     duration: '3 days',
     rating: 4.9,
     gradient: 'from-blue-500 to-blue-600',
-    emoji: '💻',
+    faIcon: faLaptopCode,
     color: 'blue',
   },
   {
@@ -24,7 +35,7 @@ const FREELANCER_CARDS = [
     duration: '5 days',
     rating: 5.0,
     gradient: 'from-purple-500 to-purple-600',
-    emoji: '📱',
+    faIcon: faMobileScreen,
     color: 'purple',
   },
   {
@@ -35,7 +46,7 @@ const FREELANCER_CARDS = [
     duration: '2 days',
     rating: 4.8,
     gradient: 'from-green-500 to-green-600',
-    emoji: '📈',
+    faIcon: faChartLine,
     color: 'green',
   },
   {
@@ -46,7 +57,7 @@ const FREELANCER_CARDS = [
     duration: '2 days',
     rating: 4.9,
     gradient: 'from-pink-500 to-pink-600',
-    emoji: '🎨',
+    faIcon: faPaintbrush,
     color: 'pink',
   },
   {
@@ -57,7 +68,7 @@ const FREELANCER_CARDS = [
     duration: '1 day',
     rating: 4.7,
     gradient: 'from-indigo-500 to-indigo-600',
-    emoji: '✍️',
+    faIcon: faPenNib,
     color: 'indigo',
   },
   {
@@ -68,7 +79,7 @@ const FREELANCER_CARDS = [
     duration: '4 days',
     rating: 4.8,
     gradient: 'from-orange-500 to-orange-600',
-    emoji: '🎬',
+    faIcon: faVideo,
     color: 'orange',
   },
 ];
@@ -76,31 +87,24 @@ const FREELANCER_CARDS = [
 // Helper
 const rand = (min: number, max: number) => Math.random() * (max - min) + min;
 
+// Pre-compute scatter once (outside component – stable enough)
+const initialScatter = FREELANCER_CARDS.map(() => ({
+  radius: rand(120, 220),
+  angle: rand(0, Math.PI * 2),
+  lift: rand(-40, 40),
+  rotate: rand(-12, 12),
+  speed: rand(0.15, 0.3),
+}));
+
 export default function EnhancedHeroSection() {
   const [mounted, setMounted] = useState(false);
   const [time, setTime] = useState(0);
-  const [scatter, setScatter] = useState<
-    {
-      radius: number;
-      angle: number;
-      lift: number;
-      rotate: number;
-      speed: number;
-    }[]
-  >([]);
+  const [scatter] = useState(initialScatter); // initializer only – no setter
 
-  // Generate scatter positions only on client after mount
+  // Mark as mounted (this is the standard Next.js pattern)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
-    setScatter(
-      FREELANCER_CARDS.map(() => ({
-        radius: rand(120, 220),
-        angle: rand(0, Math.PI * 2),
-        lift: rand(-40, 40),
-        rotate: rand(-12, 12),
-        speed: rand(0.15, 0.3),
-      }))
-    );
   }, []);
 
   // Auto cycle active card
@@ -120,10 +124,10 @@ export default function EnhancedHeroSection() {
     return () => clearInterval(tick);
   }, []);
 
-  if (!mounted) return null; // prevent SSR mismatch
+  if (!mounted) return null;
 
   return (
-    <section className="relative overflow-hidden bg-white px-4 pt-28 pb-20 sm:px-6 sm:pt-10 sm:pb-10 lg:px-8">
+    <section className="relative overflow-hidden bg-white px-4 pt-28 pb-20 sm:px-6 sm:pt-20 sm:pb-10 lg:px-8 lg:pt-10">
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 lg:grid-cols-2">
         {/* LEFT */}
         <div>
@@ -192,7 +196,7 @@ export default function EnhancedHeroSection() {
                     <div
                       className={`flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-r ${card.gradient} text-xl text-white`}
                     >
-                      {card.emoji}
+                      <FontAwesomeIcon icon={card.faIcon} />
                     </div>
                     <div>
                       <div className="font-bold">{card.title}</div>

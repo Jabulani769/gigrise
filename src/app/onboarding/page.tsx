@@ -2,7 +2,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase/client';
 import {
   ArrowRight,
   Upload,
@@ -12,17 +14,28 @@ import {
   Briefcase,
   Award,
   DollarSign,
+  AlertCircle,
+  Loader2,
 } from 'lucide-react';
 
 type OnboardingStep = 'welcome' | 'profile' | 'skills' | 'pricing' | 'complete';
 
 export default function OnboardingPage() {
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [currentStep, setCurrentStep] = useState<OnboardingStep>('welcome');
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userType, setUserType] = useState<string>('freelancer');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState<string>('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
   const [profileData, setProfileData] = useState({
     bio: '',
     title: '',
-    avatar: '',
-    portfolio: [] as string[],
   });
   const [skills, setSkills] = useState<string[]>([]);
   const [newSkill, setNewSkill] = useState('');
@@ -31,8 +44,55 @@ export default function OnboardingPage() {
     minProject: '',
   });
 
-  // Mock user type from signup
-  const userType = 'freelancer'; // This would come from auth context
+  // ✅ Get current user on mount
+  useEffect(() => {
+    const getUser = async () => {
+      setIsLoading(true);
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+
+        if (error || !user) {
+          // Not logged in - redirect to login
+          router.push('/login');
+          return;
+        }
+
+        setUserId(user.id);
+
+        // ✅ Fetch existing profile data
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (profile) {
+          setUserType(profile.user_type || 'freelancer');
+          setProfileData({
+            bio: profile.bio || '',
+            title: profile.full_name || '',
+          });
+          setSkills(profile.skills || []);
+          setPricing({
+            hourlyRate: profile.hourly_rate?.toString() || '',
+            minProject: profile.min_project_budget?.toString() || '',
+          });
+          if (profile.avatar_url) {
+            setAvatarPreview(profile.avatar_url);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching user:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getUser();
+  }, [router]);
 
   const handleNext = () => {
     if (currentStep === 'welcome') setCurrentStep('profile');
@@ -41,10 +101,7 @@ export default function OnboardingPage() {
     else if (currentStep === 'pricing') setCurrentStep('complete');
   };
 
-  const handleSkip = () => {
-    // Skip to profile
-    window.location.href = '/profile';
-  };
+  const handleSkip = () => router.push('/feed');
 
   const addSkill = () => {
     if (newSkill.trim() && !skills.includes(newSkill.trim())) {
@@ -57,11 +114,153 @@ export default function OnboardingPage() {
     setSkills(skills.filter((s) => s !== skill));
   };
 
-  const handleComplete = () => {
-    // Save profile and redirect to profile
-    console.log('Profile data:', { profileData, skills, pricing });
-    window.location.href = '/profile';
+  // ✅ Handle avatar file selection
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be less than 5MB');
+      return;
+    }
+
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+    setError('');
   };
+
+  // ✅ Upload avatar to Supabase Storage
+  const uploadAvatar = async (userId: string): Promise<string | null> => {
+    if (!avatarFile) return avatarPreview || null;
+
+    try {
+      const fileExt = avatarFile.name.split('.').pop();
+      const filePath = `${userId}/avatar.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, avatarFile, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (err) {
+      console.error('Avatar upload error:', err);
+      return null;
+    }
+  };
+
+  // ✅ Save profile step to Supabase
+  const saveProfileStep = async () => {
+    if (!userId) return;
+    setIsSaving(true);
+    setError('');
+
+    try {
+      // Upload avatar if selected
+      const avatarUrl = await uploadAvatar(userId);
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          bio: profileData.bio,
+          full_name: profileData.title,
+          avatar_url: avatarUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      handleNext();
+    } catch (err: any) {
+      setError(err.message || 'Failed to save profile. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // ✅ Save skills step to Supabase
+  const saveSkillsStep = async () => {
+    if (!userId) return;
+    setIsSaving(true);
+    setError('');
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          skills: skills,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      handleNext();
+    } catch (err: any) {
+      setError(err.message || 'Failed to save skills. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // ✅ Save pricing step to Supabase
+  const savePricingStep = async () => {
+    if (!userId) return;
+    setIsSaving(true);
+    setError('');
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          hourly_rate: pricing.hourlyRate
+            ? parseFloat(pricing.hourlyRate)
+            : null,
+          min_project_budget: pricing.minProject
+            ? parseFloat(pricing.minProject)
+            : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      handleNext();
+    } catch (err: any) {
+      setError(err.message || 'Failed to save pricing. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // ✅ Complete onboarding - redirect to feed
+  const handleComplete = () => {
+    router.push('/feed');
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="mx-auto h-12 w-12 animate-spin text-blue-600" />
+          <p className="mt-4 text-gray-600">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50">
@@ -91,54 +290,60 @@ export default function OnboardingPage() {
               { id: 'profile', label: 'Profile', step: 1 },
               { id: 'skills', label: 'Skills', step: 2 },
               { id: 'pricing', label: 'Pricing', step: 3 },
-            ].map((item, idx) => (
-              <div key={item.id} className="flex flex-1 items-center">
-                <div className="flex flex-col items-center">
-                  <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition ${
-                      currentStep === item.id
-                        ? 'border-blue-600 bg-blue-600 text-white'
-                        : item.step <
-                            (currentStep === 'skills'
-                              ? 2
-                              : currentStep === 'pricing'
-                                ? 3
-                                : 1)
-                          ? 'border-green-600 bg-green-600 text-white'
-                          : 'border-gray-300 bg-white text-gray-400'
-                    }`}
-                  >
-                    {item.step <
-                    (currentStep === 'skills'
-                      ? 2
-                      : currentStep === 'pricing'
-                        ? 3
-                        : 1) ? (
-                      <Check className="h-5 w-5" />
-                    ) : (
-                      item.step
-                    )}
+            ].map((item, idx) => {
+              const currentStepNum =
+                currentStep === 'profile'
+                  ? 1
+                  : currentStep === 'skills'
+                    ? 2
+                    : currentStep === 'pricing'
+                      ? 3
+                      : 0;
+
+              return (
+                <div key={item.id} className="flex flex-1 items-center">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition ${
+                        item.step === currentStepNum
+                          ? 'border-blue-600 bg-blue-600 text-white'
+                          : item.step < currentStepNum
+                            ? 'border-green-600 bg-green-600 text-white'
+                            : 'border-gray-300 bg-white text-gray-400'
+                      }`}
+                    >
+                      {item.step < currentStepNum ? (
+                        <Check className="h-5 w-5" />
+                      ) : (
+                        item.step
+                      )}
+                    </div>
+                    <span className="mt-2 hidden text-xs text-gray-600 sm:block">
+                      {item.label}
+                    </span>
                   </div>
-                  <span className="mt-2 hidden text-xs text-gray-600 sm:block">
-                    {item.label}
-                  </span>
+                  {idx < 2 && (
+                    <div
+                      className={`mx-2 h-1 flex-1 rounded ${
+                        item.step < currentStepNum
+                          ? 'bg-green-600'
+                          : 'bg-gray-300'
+                      }`}
+                    ></div>
+                  )}
                 </div>
-                {idx < 2 && (
-                  <div
-                    className={`mx-2 h-1 flex-1 rounded ${
-                      item.step <
-                      (currentStep === 'skills'
-                        ? 2
-                        : currentStep === 'pricing'
-                          ? 3
-                          : 1)
-                        ? 'bg-green-600'
-                        : 'bg-gray-300'
-                    }`}
-                  ></div>
-                )}
-              </div>
-            ))}
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Error Banner */}
+      {error && (
+        <div className="mx-auto mt-4 max-w-2xl px-4">
+          <div className="flex items-start space-x-2 rounded-lg bg-red-50 p-4">
+            <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
+            <p className="text-sm text-red-700">{error}</p>
           </div>
         </div>
       )}
@@ -148,7 +353,7 @@ export default function OnboardingPage() {
         <div className="w-full max-w-2xl">
           {/* Welcome Step */}
           {currentStep === 'welcome' && (
-            <div className="animate-in fade-in text-center duration-300">
+            <div className="text-center">
               <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-blue-600 to-purple-600 text-5xl text-white">
                 🎉
               </div>
@@ -156,7 +361,7 @@ export default function OnboardingPage() {
                 Welcome to Gigrise!
               </h1>
               <p className="mb-8 text-xl text-gray-600">
-                Let's set up your profile so clients can find you
+                Let&apos;s set up your profile so clients can find you
               </p>
 
               <div className="mb-8 grid gap-4 md:grid-cols-3">
@@ -203,7 +408,7 @@ export default function OnboardingPage() {
 
           {/* Profile Step */}
           {currentStep === 'profile' && (
-            <div className="animate-in fade-in duration-300">
+            <div>
               <h2 className="mb-2 text-3xl font-bold text-gray-900">
                 Complete Your Profile
               </h2>
@@ -212,19 +417,46 @@ export default function OnboardingPage() {
               </p>
 
               <div className="space-y-6 rounded-lg bg-white p-6 shadow-sm">
-                {/* Avatar Upload */}
+                {/* ✅ Avatar Upload */}
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-700">
                     Profile Picture
                   </label>
                   <div className="flex items-center space-x-4">
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-200 text-3xl">
-                      {profileData.avatar || '👤'}
+                    <div className="h-20 w-20 overflow-hidden rounded-full bg-gray-200">
+                      {avatarPreview ? (
+                        <img
+                          src={avatarPreview}
+                          alt="Avatar preview"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-3xl">
+                          👤
+                        </div>
+                      )}
                     </div>
-                    <button className="inline-flex items-center space-x-2 rounded-lg border-2 border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50">
-                      <Upload className="h-5 w-5" />
-                      <span>Upload Photo</span>
-                    </button>
+                    <div>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                      />
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="inline-flex items-center space-x-2 rounded-lg border-2 border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        <Upload className="h-5 w-5" />
+                        <span>
+                          {avatarPreview ? 'Change Photo' : 'Upload Photo'}
+                        </span>
+                      </button>
+                      <p className="mt-1 text-xs text-gray-500">
+                        JPG, PNG up to 5MB
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -265,31 +497,31 @@ export default function OnboardingPage() {
                     }
                     className="block w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                     placeholder="Describe your experience, what you do, and what makes you unique..."
+                    maxLength={500}
                   ></textarea>
                   <p className="mt-1 text-xs text-gray-500">
                     {profileData.bio.length}/500 characters
                   </p>
                 </div>
-
-                {/* Portfolio */}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Portfolio (Optional)
-                  </label>
-                  <button className="inline-flex items-center space-x-2 rounded-lg border-2 border-dashed border-gray-300 px-4 py-3 font-medium text-gray-700 hover:border-gray-400 hover:bg-gray-50">
-                    <Plus className="h-5 w-5" />
-                    <span>Add Portfolio Item</span>
-                  </button>
-                </div>
               </div>
 
-              <div className="mt-6 flex space-x-3">
+              <div className="mt-6">
                 <button
-                  onClick={handleNext}
-                  className="flex flex-1 items-center justify-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+                  onClick={saveProfileStep}
+                  disabled={isSaving}
+                  className="flex w-full items-center justify-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <span>Continue</span>
-                  <ArrowRight className="h-5 w-5" />
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Continue</span>
+                      <ArrowRight className="h-5 w-5" />
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -297,7 +529,7 @@ export default function OnboardingPage() {
 
           {/* Skills Step */}
           {currentStep === 'skills' && (
-            <div className="animate-in fade-in duration-300">
+            <div>
               <h2 className="mb-2 text-3xl font-bold text-gray-900">
                 Add Your Skills
               </h2>
@@ -320,7 +552,7 @@ export default function OnboardingPage() {
                       id="skill"
                       value={newSkill}
                       onChange={(e) => setNewSkill(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addSkill()}
+                      onKeyDown={(e) => e.key === 'Enter' && addSkill()}
                       className="block flex-1 rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
                       placeholder="e.g. React.js, Logo Design, Content Writing"
                     />
@@ -375,13 +607,16 @@ export default function OnboardingPage() {
                       <button
                         key={skill}
                         onClick={() => {
-                          if (!skills.includes(skill)) {
+                          if (!skills.includes(skill))
                             setSkills([...skills, skill]);
-                          }
                         }}
-                        className="rounded-full border-2 border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:border-blue-600 hover:bg-blue-50 hover:text-blue-600"
+                        className={`rounded-full border-2 px-4 py-2 text-sm font-medium transition ${
+                          skills.includes(skill)
+                            ? 'border-blue-600 bg-blue-50 text-blue-600'
+                            : 'border-gray-300 text-gray-700 hover:border-blue-600 hover:bg-blue-50 hover:text-blue-600'
+                        }`}
                       >
-                        + {skill}
+                        {skills.includes(skill) ? `✓ ${skill}` : `+ ${skill}`}
                       </button>
                     ))}
                   </div>
@@ -396,11 +631,21 @@ export default function OnboardingPage() {
                   Back
                 </button>
                 <button
-                  onClick={handleNext}
-                  className="flex flex-1 items-center justify-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+                  onClick={saveSkillsStep}
+                  disabled={isSaving}
+                  className="flex flex-1 items-center justify-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
                 >
-                  <span>Continue</span>
-                  <ArrowRight className="h-5 w-5" />
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Continue</span>
+                      <ArrowRight className="h-5 w-5" />
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -408,7 +653,7 @@ export default function OnboardingPage() {
 
           {/* Pricing Step */}
           {currentStep === 'pricing' && (
-            <div className="animate-in fade-in duration-300">
+            <div>
               <h2 className="mb-2 text-3xl font-bold text-gray-900">
                 Set Your Rates
               </h2>
@@ -464,7 +709,7 @@ export default function OnboardingPage() {
                     />
                   </div>
                   <p className="mt-1 text-xs text-gray-500">
-                    Projects below this amount won't be shown to you
+                    Projects below this amount won&apos;t be shown to you
                   </p>
                 </div>
 
@@ -485,11 +730,21 @@ export default function OnboardingPage() {
                   Back
                 </button>
                 <button
-                  onClick={handleNext}
-                  className="flex flex-1 items-center justify-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
+                  onClick={savePricingStep}
+                  disabled={isSaving}
+                  className="flex flex-1 items-center justify-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
                 >
-                  <span>Continue</span>
-                  <ArrowRight className="h-5 w-5" />
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Continue</span>
+                      <ArrowRight className="h-5 w-5" />
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -497,21 +752,21 @@ export default function OnboardingPage() {
 
           {/* Complete Step */}
           {currentStep === 'complete' && (
-            <div className="animate-in fade-in text-center duration-300">
+            <div className="text-center">
               <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full bg-green-100">
                 <Check className="h-12 w-12 text-green-600" />
               </div>
               <h1 className="mb-4 text-4xl font-bold text-gray-900">
-                You're All Set!
+                You&apos;re All Set!
               </h1>
               <p className="mb-8 text-xl text-gray-600">
-                Your profile is ready. Let's start your journey on Gigrise!
+                Your profile is ready. Let&apos;s start your journey on Gigrise!
               </p>
 
               <div className="mb-8 grid gap-4 md:grid-cols-2">
                 <div className="rounded-lg bg-white p-6 text-left shadow-sm">
                   <h3 className="mb-2 font-semibold text-gray-900">
-                    ✨ What's Next?
+                    ✨ What&apos;s Next?
                   </h3>
                   <ul className="space-y-2 text-sm text-gray-600">
                     <li>• Post your first gig</li>
@@ -520,7 +775,6 @@ export default function OnboardingPage() {
                     <li>• Build your portfolio</li>
                   </ul>
                 </div>
-
                 <div className="rounded-lg bg-white p-6 text-left shadow-sm">
                   <h3 className="mb-2 font-semibold text-gray-900">
                     🎁 Welcome Bonus
@@ -538,7 +792,7 @@ export default function OnboardingPage() {
                 onClick={handleComplete}
                 className="inline-flex items-center space-x-2 rounded-lg bg-linear-to-r from-blue-600 to-purple-600 px-8 py-4 font-semibold text-white transition hover:from-blue-700 hover:to-purple-700"
               >
-                <span>Go to profile</span>
+                <span>Go to Feed</span>
                 <ArrowRight className="h-5 w-5" />
               </button>
             </div>

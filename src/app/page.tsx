@@ -1,26 +1,25 @@
 // src/app/page.tsx
 import Link from 'next/link';
 import Hero from '../components/hero';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  ArrowRight,
-  Shield,
-  Zap,
-  Globe,
-  TrendingUp,
-  Users,
-  CheckCircle,
-  Star,
-  Briefcase,
-  ShoppingBag,
-  Clock,
-  Laptop,
-  Paintbrush,
-  Edit,
-  Smartphone,
-  Film,
-  Phone,
-  Tag,
-} from 'lucide-react';
+  faArrowRight,
+  faShieldHalved,
+  faBolt,
+  faGlobe,
+  faChartLine,
+  faUsers,
+  faCircleCheck,
+  faBriefcase,
+  faBagShopping,
+  faLaptop,
+  faPaintbrush,
+  faPenToSquare,
+  faMobileScreenButton,
+  faFilm,
+  faPhone,
+  faTag,
+} from '@fortawesome/free-solid-svg-icons';
 
 export default function HomePage() {
   return (
@@ -36,23 +35,25 @@ export default function HomePage() {
                 <span className="text-xl font-bold text-gray-900">Gigrise</span>
               </Link>
             </div>
-
             {/* Desktop Navigation */}
             <div className="hidden items-center space-x-8 md:flex">
               <Link
                 href="#features"
+                scroll={false}
                 className="text-gray-600 transition hover:text-gray-900"
               >
                 Features
               </Link>
               <Link
                 href="#categories"
+                scroll={false}
                 className="text-gray-600 transition hover:text-gray-900"
               >
                 Categories
               </Link>
               <Link
                 href="#pricing"
+                scroll={false}
                 className="text-gray-600 transition hover:text-gray-900"
               >
                 Pricing
@@ -64,7 +65,6 @@ export default function HomePage() {
                 About
               </Link>
             </div>
-
             {/* CTA Buttons */}
             <div className="flex items-center space-x-4">
               <Link
@@ -86,6 +86,7 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <Hero />
+
       {/* Features Section */}
       <section id="features" className="bg-gray-50 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -97,12 +98,14 @@ export default function HomePage() {
               Everything you need to succeed in the digital economy
             </p>
           </div>
-
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {/* Feature 1 */}
             <div className="rounded-2xl bg-white p-8 shadow-sm transition hover:shadow-md">
               <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
-                <Shield className="h-6 w-6 text-blue-600" />
+                <FontAwesomeIcon
+                  icon={faShieldHalved}
+                  className="h-6 w-6 text-blue-600"
+                />
               </div>
               <h3 className="mb-4 text-xl font-bold text-gray-900">
                 Secure Escrow Payments
@@ -113,11 +116,13 @@ export default function HomePage() {
                 international payments.
               </p>
             </div>
-
             {/* Feature 2 */}
             <div className="rounded-2xl bg-white p-8 shadow-sm transition hover:shadow-md">
               <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100">
-                <Zap className="h-6 w-6 text-purple-600" />
+                <FontAwesomeIcon
+                  icon={faBolt}
+                  className="h-6 w-6 text-purple-600"
+                />
               </div>
               <h3 className="mb-4 text-xl font-bold text-gray-900">
                 Dual Platform
@@ -127,11 +132,13 @@ export default function HomePage() {
                 talent or buy products - all your business needs covered.
               </p>
             </div>
-
             {/* Feature 3 */}
             <div className="rounded-2xl bg-white p-8 shadow-sm transition hover:shadow-md">
               <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
-                <Globe className="h-6 w-6 text-green-600" />
+                <FontAwesomeIcon
+                  icon={faGlobe}
+                  className="h-6 w-6 text-green-600"
+                />
               </div>
               <h3 className="mb-4 text-xl font-bold text-gray-900">
                 Local & Global Reach
@@ -141,11 +148,13 @@ export default function HomePage() {
                 methods. Ready to scale across Africa and beyond.
               </p>
             </div>
-
             {/* Feature 4 */}
             <div className="rounded-2xl bg-white p-8 shadow-sm transition hover:shadow-md">
               <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-orange-100">
-                <TrendingUp className="h-6 w-6 text-orange-600" />
+                <FontAwesomeIcon
+                  icon={faChartLine}
+                  className="h-6 w-6 text-orange-600"
+                />
               </div>
               <h3 className="mb-4 text-xl font-bold text-gray-900">
                 Grow Your Business
@@ -156,11 +165,13 @@ export default function HomePage() {
                 entrepreneurs.
               </p>
             </div>
-
             {/* Feature 5 */}
             <div className="rounded-2xl bg-white p-8 shadow-sm transition hover:shadow-md">
               <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-pink-100">
-                <Users className="h-6 w-6 text-pink-600" />
+                <FontAwesomeIcon
+                  icon={faUsers}
+                  className="h-6 w-6 text-pink-600"
+                />
               </div>
               <h3 className="mb-4 text-xl font-bold text-gray-900">
                 Verified Profiles
@@ -170,11 +181,13 @@ export default function HomePage() {
                 Check ratings, reviews, and portfolios before hiring.
               </p>
             </div>
-
             {/* Feature 6 */}
             <div className="rounded-2xl bg-white p-8 shadow-sm transition hover:shadow-md">
               <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100">
-                <CheckCircle className="h-6 w-6 text-indigo-600" />
+                <FontAwesomeIcon
+                  icon={faCircleCheck}
+                  className="h-6 w-6 text-indigo-600"
+                />
               </div>
               <h3 className="mb-4 text-xl font-bold text-gray-900">
                 Easy to Use
@@ -187,6 +200,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
       {/* Popular Categories */}
       <section id="categories" className="bg-white py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -198,47 +212,86 @@ export default function HomePage() {
               Find the perfect freelancer or product for your needs
             </p>
           </div>
-
           <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-4">
             {[
               {
                 name: 'Web Development',
-                icon: <Laptop className="h-6 w-6 text-indigo-600" />,
+                icon: (
+                  <FontAwesomeIcon
+                    icon={faLaptop}
+                    className="h-6 w-6 text-indigo-600"
+                  />
+                ),
                 count: '120+ gigs',
               },
               {
                 name: 'Graphic Design',
-                icon: <Paintbrush className="h-6 w-6 text-indigo-600" />,
+                icon: (
+                  <FontAwesomeIcon
+                    icon={faPaintbrush}
+                    className="h-6 w-6 text-indigo-600"
+                  />
+                ),
                 count: '85+ gigs',
               },
               {
                 name: 'Content Writing',
-                icon: <Edit className="h-6 w-6 text-indigo-600" />,
+                icon: (
+                  <FontAwesomeIcon
+                    icon={faPenToSquare}
+                    className="h-6 w-6 text-indigo-600"
+                  />
+                ),
                 count: '95+ gigs',
               },
               {
                 name: 'Digital Marketing',
-                icon: <Smartphone className="h-6 w-6 text-indigo-600" />,
+                icon: (
+                  <FontAwesomeIcon
+                    icon={faMobileScreenButton}
+                    className="h-6 w-6 text-indigo-600"
+                  />
+                ),
                 count: '70+ gigs',
               },
               {
                 name: 'Video Editing',
-                icon: <Film className="h-6 w-6 text-indigo-600" />,
+                icon: (
+                  <FontAwesomeIcon
+                    icon={faFilm}
+                    className="h-6 w-6 text-indigo-600"
+                  />
+                ),
                 count: '45+ gigs',
               },
               {
                 name: 'Mobile Apps',
-                icon: <Phone className="h-6 w-6 text-indigo-600" />,
+                icon: (
+                  <FontAwesomeIcon
+                    icon={faPhone}
+                    className="h-6 w-6 text-indigo-600"
+                  />
+                ),
                 count: '55+ gigs',
               },
               {
                 name: 'Electronics',
-                icon: <Zap className="h-6 w-6 text-indigo-600" />,
+                icon: (
+                  <FontAwesomeIcon
+                    icon={faBolt}
+                    className="h-6 w-6 text-indigo-600"
+                  />
+                ),
                 count: '200+ products',
               },
               {
                 name: 'Fashion',
-                icon: <Tag className="h-6 w-6 text-indigo-600" />,
+                icon: (
+                  <FontAwesomeIcon
+                    icon={faTag}
+                    className="h-6 w-6 text-indigo-600"
+                  />
+                ),
                 count: '150+ products',
               },
             ].map((category) => (
@@ -255,18 +308,18 @@ export default function HomePage() {
               </Link>
             ))}
           </div>
-
           <div className="mt-10 text-center">
             <Link
               href="/browse"
               className="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700"
             >
               <span className="font-semibold">View All Categories</span>
-              <ArrowRight className="h-4 w-4" />
+              <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4" />
             </Link>
           </div>
         </div>
       </section>
+
       {/* Dual Platform Section */}
       <section className="bg-white py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -274,7 +327,10 @@ export default function HomePage() {
             {/* Left Side - Freelance */}
             <div className="rounded-2xl bg-linear-to-br from-blue-50 to-purple-50 p-8">
               <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-600">
-                <Briefcase className="h-8 w-8 text-white" />
+                <FontAwesomeIcon
+                  icon={faBriefcase}
+                  className="h-8 w-8 text-white"
+                />
               </div>
               <h3 className="mb-4 text-3xl font-bold text-gray-900">
                 Freelance Services
@@ -286,15 +342,24 @@ export default function HomePage() {
               </p>
               <ul className="mb-8 space-y-3">
                 <li className="flex items-center text-gray-700">
-                  <CheckCircle className="mr-3 h-5 w-5 text-green-600" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mr-3 h-5 w-5 text-green-600"
+                  />
                   <span>Browse 500+ skilled freelancers</span>
                 </li>
                 <li className="flex items-center text-gray-700">
-                  <CheckCircle className="mr-3 h-5 w-5 text-green-600" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mr-3 h-5 w-5 text-green-600"
+                  />
                   <span>Secure escrow payments</span>
                 </li>
                 <li className="flex items-center text-gray-700">
-                  <CheckCircle className="mr-3 h-5 w-5 text-green-600" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mr-3 h-5 w-5 text-green-600"
+                  />
                   <span>Ratings and reviews</span>
                 </li>
               </ul>
@@ -303,14 +368,16 @@ export default function HomePage() {
                 className="inline-flex items-center space-x-2 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition hover:bg-blue-700"
               >
                 <span>Browse Gigs</span>
-                <ArrowRight className="h-5 w-5" />
+                <FontAwesomeIcon icon={faArrowRight} className="h-5 w-5" />
               </Link>
             </div>
-
             {/* Right Side - Marketplace */}
             <div className="rounded-2xl bg-linear-to-br from-purple-50 to-pink-50 p-8">
               <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-purple-600">
-                <ShoppingBag className="h-8 w-8 text-white" />
+                <FontAwesomeIcon
+                  icon={faBagShopping}
+                  className="h-8 w-8 text-white"
+                />
               </div>
               <h3 className="mb-4 text-3xl font-bold text-gray-900">
                 Product Marketplace
@@ -321,15 +388,24 @@ export default function HomePage() {
               </p>
               <ul className="mb-8 space-y-3">
                 <li className="flex items-center text-gray-700">
-                  <CheckCircle className="mr-3 h-5 w-5 text-green-600" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mr-3 h-5 w-5 text-green-600"
+                  />
                   <span>Shop 1000+ products</span>
                 </li>
                 <li className="flex items-center text-gray-700">
-                  <CheckCircle className="mr-3 h-5 w-5 text-green-600" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mr-3 h-5 w-5 text-green-600"
+                  />
                   <span>Safe payment options</span>
                 </li>
                 <li className="flex items-center text-gray-700">
-                  <CheckCircle className="mr-3 h-5 w-5 text-green-600" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mr-3 h-5 w-5 text-green-600"
+                  />
                   <span>Seller verification</span>
                 </li>
               </ul>
@@ -338,12 +414,13 @@ export default function HomePage() {
                 className="inline-flex items-center space-x-2 rounded-lg bg-purple-600 px-6 py-3 font-semibold text-white transition hover:bg-purple-700"
               >
                 <span>Browse Products</span>
-                <ArrowRight className="h-5 w-5" />
+                <FontAwesomeIcon icon={faArrowRight} className="h-5 w-5" />
               </Link>
             </div>
           </div>
         </div>
       </section>
+
       {/* Pricing Section */}
       <section id="pricing" className="bg-gray-50 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -355,7 +432,6 @@ export default function HomePage() {
               Start free, upgrade when you grow
             </p>
           </div>
-
           <div className="mx-auto grid max-w-5xl gap-8 md:grid-cols-2">
             {/* Free Plan */}
             <div className="rounded-2xl border-2 border-gray-200 bg-white p-8 shadow-sm">
@@ -370,25 +446,40 @@ export default function HomePage() {
               </div>
               <ul className="mb-8 space-y-4">
                 <li className="flex items-start">
-                  <CheckCircle className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-green-600" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-green-600"
+                  />
                   <span className="text-gray-600">Post up to 3 gigs</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-green-600" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-green-600"
+                  />
                   <span className="text-gray-600">
                     List up to 5 marketplace items
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-green-600" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-green-600"
+                  />
                   <span className="text-gray-600">Basic messaging</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-green-600" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-green-600"
+                  />
                   <span className="text-gray-600">15% platform fee</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-green-600" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-green-600"
+                  />
                   <span className="text-gray-600">Standard support</span>
                 </li>
               </ul>
@@ -399,7 +490,6 @@ export default function HomePage() {
                 Get Started Free
               </Link>
             </div>
-
             {/* Premium Plan */}
             <div className="relative rounded-2xl bg-linear-to-br from-blue-600 to-purple-600 p-8 text-white shadow-lg">
               <div className="absolute top-4 right-4 rounded-full bg-yellow-400 px-3 py-1 text-sm font-bold text-gray-900">
@@ -412,31 +502,52 @@ export default function HomePage() {
               </div>
               <ul className="mb-8 space-y-4">
                 <li className="flex items-start">
-                  <CheckCircle className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-yellow-300" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-yellow-300"
+                  />
                   <span>Unlimited gigs</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-yellow-300" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-yellow-300"
+                  />
                   <span>Unlimited marketplace listings</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-yellow-300" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-yellow-300"
+                  />
                   <span>Priority in search results</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-yellow-300" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-yellow-300"
+                  />
                   <span>10% platform fee (save 5%!)</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-yellow-300" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-yellow-300"
+                  />
                   <span>Advanced analytics</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-yellow-300" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-yellow-300"
+                  />
                   <span>Featured listings</span>
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-yellow-300" />
+                  <FontAwesomeIcon
+                    icon={faCircleCheck}
+                    className="mt-0.5 mr-3 h-5 w-5 shrink-0 text-yellow-300"
+                  />
                   <span>Priority support</span>
                 </li>
               </ul>
@@ -450,6 +561,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
       {/* CTA Section */}
       <section className="bg-linear-to-br from-blue-600 to-purple-600 py-20">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
@@ -476,6 +588,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
       {/* Footer */}
       <footer className="bg-gray-900 py-12 text-gray-400">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -486,10 +599,9 @@ export default function HomePage() {
                 <span className="text-xl font-bold text-white">Gigrise</span>
               </div>
               <p className="text-sm">
-                Empowering Malawi's digital economy, one gig at a time.
+                Empowering Malawi&apos;s digital economy, one gig at a time.
               </p>
             </div>
-
             <div>
               <h4 className="mb-4 font-semibold text-white">For Clients</h4>
               <ul className="space-y-2 text-sm">
@@ -519,7 +631,6 @@ export default function HomePage() {
                 </li>
               </ul>
             </div>
-
             <div>
               <h4 className="mb-4 font-semibold text-white">For Freelancers</h4>
               <ul className="space-y-2 text-sm">
@@ -546,7 +657,6 @@ export default function HomePage() {
                 </li>
               </ul>
             </div>
-
             <div>
               <h4 className="mb-4 font-semibold text-white">Company</h4>
               <ul className="space-y-2 text-sm">
@@ -573,7 +683,6 @@ export default function HomePage() {
               </ul>
             </div>
           </div>
-
           <div className="border-t border-gray-800 pt-8 text-center text-sm">
             <p>© 2026 Gigrise. All rights reserved.</p>
           </div>
