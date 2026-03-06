@@ -1,19 +1,28 @@
-// src/app/verify-email/page.tsx
 'use client';
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { Mail, CheckCircle, RefreshCw, ArrowRight } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { supabase } from '@/lib/supabase/client';
+import { Mail, CheckCircle, RefreshCw } from 'lucide-react';
 
 export default function VerifyEmailPage() {
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState('');
   const [isResending, setIsResending] = useState(false);
   const [resendMessage, setResendMessage] = useState('');
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
 
-  // Mock email - in real app, get from URL params or session
-  const email = 'john@example.com';
+  // ✅ Get email from URL parameter
+  useEffect(() => {
+    const emailParam = searchParams.get('email');
+    if (emailParam) {
+      setEmail(emailParam);
+    }
+  }, [searchParams]);
 
+  // Countdown timer for resend button
   useEffect(() => {
     if (countdown > 0 && !canResend) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -23,25 +32,40 @@ export default function VerifyEmailPage() {
     }
   }, [countdown, canResend]);
 
+  // ✅ Resend verification email
   const handleResend = async () => {
+    if (!email) return;
+
     setIsResending(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/api/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+
       setResendMessage(
-        'Verification email sent successfully! Check your inbox.'
+        '✅ Verification email sent successfully! Check your inbox.'
       );
-      setIsResending(false);
       setCanResend(false);
       setCountdown(60);
 
       setTimeout(() => setResendMessage(''), 5000);
-    }, 2000);
+    } catch (err) {
+      console.error('Resend error:', err);
+      setResendMessage('❌ Failed to resend. Please try again.');
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50">
-      {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center">
@@ -53,24 +77,22 @@ export default function VerifyEmailPage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
         <div className="w-full max-w-md text-center">
-          {/* Email Icon */}
           <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-blue-100">
             <Mail className="h-12 w-12 text-blue-600" />
           </div>
 
-          {/* Title */}
           <h1 className="mb-4 text-3xl font-bold text-gray-900">
             Verify Your Email
           </h1>
           <p className="mb-8 text-gray-600">
-            We've sent a verification email to:
+            We&apos;ve sent a verification email to:
           </p>
-          <p className="mb-8 text-lg font-semibold text-gray-900">{email}</p>
+          <p className="mb-8 text-lg font-semibold text-gray-900">
+            {email || 'your email'}
+          </p>
 
-          {/* Instructions */}
           <div className="mb-8 rounded-lg bg-white p-6 text-left shadow-sm">
             <h3 className="mb-4 font-semibold text-gray-900">Next Steps:</h3>
             <ol className="space-y-3 text-sm text-gray-600">
@@ -90,25 +112,38 @@ export default function VerifyEmailPage() {
                 <span className="mr-3 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-600">
                   3
                 </span>
-                <span>Complete your profile setup</span>
+                <span>
+                  You&apos;ll be automatically redirected to complete your
+                  profile
+                </span>
               </li>
             </ol>
           </div>
 
-          {/* Success Message */}
           {resendMessage && (
-            <div className="mb-6 rounded-lg bg-green-50 p-4">
-              <div className="flex items-center space-x-2 text-green-800">
-                <CheckCircle className="h-5 w-5" />
+            <div
+              className={`mb-6 rounded-lg p-4 ${
+                resendMessage.includes('✅') ? 'bg-green-50' : 'bg-red-50'
+              }`}
+            >
+              <div
+                className={`flex items-center space-x-2 ${
+                  resendMessage.includes('✅')
+                    ? 'text-green-800'
+                    : 'text-red-800'
+                }`}
+              >
+                {resendMessage.includes('✅') && (
+                  <CheckCircle className="h-5 w-5" />
+                )}
                 <p className="text-sm">{resendMessage}</p>
               </div>
             </div>
           )}
 
-          {/* Resend Button */}
           <div className="mb-6">
             <p className="mb-3 text-sm text-gray-600">
-              Didn't receive the email?
+              Didn&apos;t receive the email?
             </p>
             <button
               onClick={handleResend}
@@ -131,7 +166,6 @@ export default function VerifyEmailPage() {
             </button>
           </div>
 
-          {/* Help Text */}
           <div className="rounded-lg bg-yellow-50 p-4 text-left">
             <p className="text-sm text-yellow-800">
               <strong>Need help?</strong> Contact us at{' '}
@@ -141,11 +175,10 @@ export default function VerifyEmailPage() {
               >
                 support@gigrise.com
               </a>{' '}
-              if you're having trouble verifying your email.
+              if you&apos;re having trouble verifying your email.
             </p>
           </div>
 
-          {/* Wrong Email */}
           <p className="mt-8 text-sm text-gray-600">
             Wrong email address?{' '}
             <Link
